@@ -1,6 +1,5 @@
 <a name="top"></a>
-<p align="center"><img src="logo.png">
-***
+<p align="center"><img src="logo.png" alt="Wombats logo" align="right">
 > Oh how the family affections combat
 > Within this heart, and each hour flings a bomb at
 > My burning soul! Neither from owl nor from bat

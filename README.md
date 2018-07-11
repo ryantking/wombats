@@ -3,10 +3,10 @@
 
 <img src="logo.png" alt="Wombats logo" title="The simple Wombat" align="right" />
 
-> Oh how the family affections combat
-> Within this heart, and each hour flings a bomb at
-> My burning soul! Neither from owl nor from bat
-> Can peace be gained until I clasp my wombat.
+> Oh how the family affections combat<br/>
+> Within this heart, and each hour flings a bomb at<br/>
+> My burning soul! Neither from owl nor from bat<br/>
+> Can peace be gained until I clasp my wombat.<br/>
 > - from [The Wombat](https://www.poemhunter.com/poem/the-wombat-2/) by Dante Gabriel Rosetti
 
 Wombats is a package manager and build system for ATS in order to automate

@@ -2,6 +2,18 @@
 
 
 [[projects]]
+  name = "github.com/BurntSushi/toml"
+  packages = ["."]
+  revision = "b26d9c308763d68093482582cea63d69be07a0f0"
+  version = "v0.3.0"
+
+[[projects]]
+  name = "github.com/Sirupsen/logrus"
+  packages = ["."]
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -32,14 +44,35 @@
   version = "v1.2.2"
 
 [[projects]]
+  name = "github.com/tcnksm/go-gitconfig"
+  packages = ["."]
+  revision = "d154598bacbf4501c095a309753c5d4af66caa81"
+  version = "v0.1.2"
+
+[[projects]]
   name = "github.com/urfave/cli"
   packages = ["."]
   revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
   version = "v1.20.0"
 
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = [
+    "unix",
+    "windows"
+  ]
+  revision = "1b2967e3c290b7c545b3db0deeda16e9be4f98a2"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "38a867b4777b28f3508866f9dfa69d7f5cc062278239cf0072c4305f20df3568"
+  inputs-digest = "42dcdaffa402f88575571bae30fc6c11792e53393552f9a9eb451cd4d6c24df1"
   solver-name = "gps-cdcl"
   solver-version = 1

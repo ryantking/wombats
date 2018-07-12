@@ -1,6 +1,9 @@
 package config
 
 import (
+	"os"
+
+	"github.com/BurntSushi/toml"
 	log "github.com/Sirupsen/logrus"
 	gitconfig "github.com/tcnksm/go-gitconfig"
 )
@@ -22,4 +25,15 @@ func New(name string) *Config {
 	}
 
 	return &Config{Package: pkgCfg}
+}
+
+// Write writes the config to the Wombats.toml file
+func (c *Config) Write() error {
+	f, err := os.Create("Wombats.toml")
+	if err != nil && !os.IsExist(err) {
+		return err
+	}
+	defer f.Close()
+
+	return toml.NewEncoder(f).Encode(c)
 }

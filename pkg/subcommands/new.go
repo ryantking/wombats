@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/BurntSushi/toml"
 	"github.com/RyanTKing/wombats/pkg/config"
 	"github.com/urfave/cli"
 )
@@ -30,6 +29,30 @@ func GetNewCommand() cli.Command {
 	}
 }
 
+func makeProjectDir(name string) error {
+	err := os.Mkdir(name, os.ModePerm)
+	if os.IsExist(err) {
+		return &ErrProjectExists{name}
+	} else if err != nil {
+		return err
+	}
+
+	return os.Chdir(name)
+}
+
+func getProjName() (string, error) {
+	if name != "" {
+		return name, nil
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	return path.Base(wd), nil
+}
+
 func runNew(c *cli.Context) error {
 	if len(c.Args()) > 1 {
 		return &ErrUnknownArguments{c.Args()[1:]}
@@ -37,34 +60,21 @@ func runNew(c *cli.Context) error {
 
 	// If a directory is provided, make it and change to it
 	if len(c.Args()) > 0 {
-		name = c.Args()[0]
-		os.Mkdir(name, os.ModePerm)
-		os.Chdir(name)
+		if err := makeProjectDir(c.Args()[0]); err != nil {
+			log.Fatalf("Error creating project: %s", err)
+		}
 	}
 
 	// Assume the name is the current directory if not set
-	if name == "" {
-		wd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		name = path.Base(wd)
+	projName, err := getProjName()
+	if err != nil {
+		log.Fatalf("Error getting project name: %s", err)
 	}
 
 	// Get the initial config and write it to a file.
-	config := config.New(name)
-	f, err := os.Create("Wombats.toml")
-	if os.IsExist(err) {
-		log.Fatalln("Wombats.toml already exists")
-		return err
-	} else if err != nil {
+	config := config.New(projName)
+	if err := config.Write(); err != nil {
 		log.Fatalf("Error creating Wombats.toml: %s", err)
-		return err
-	}
-	defer f.Close()
-	err = toml.NewEncoder(f).Encode(config)
-	if err != nil {
-		return err
 	}
 
 	return nil

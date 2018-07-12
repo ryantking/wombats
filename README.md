@@ -1,4 +1,4 @@
-# Womabts
+# Wombats
 [![Build Status](https://travis-ci.org/RyanTKing/wombats.svg?branch=master)](https://travis-ci.org/RyanTKing/wombats) [![codecov](https://codecov.io/gh/RyanTKing/wombats/branch/master/graph/badge.svg)](https://codecov.io/gh/RyanTKing/wombats) [![Go Report Card](https://goreportcard.com/badge/github.com/RyanTKing/wombats)](https://goreportcard.com/report/github.com/RyanTKing/wombats)
 
 <img src="logo.png" alt="Wombats logo" title="The simple Wombat" align="right" />

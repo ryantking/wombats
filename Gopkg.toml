@@ -26,8 +26,24 @@
 
 
 [[constraint]]
-  name = "github.com/gorilla/mux"
-  version = "1.6.2"
+  name = "github.com/BurntSushi/toml"
+  version = "0.3.0"
+
+[[constraint]]
+  name = "github.com/Sirupsen/logrus"
+  version = "1.0.5"
+
+[[constraint]]
+  name = "github.com/spf13/cobra"
+  version = "0.0.3"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+  version = "1.2.2"
+
+[[constraint]]
+  name = "github.com/tcnksm/go-gitconfig"
+  version = "0.1.2"
 
 [prune]
   go-tests = true

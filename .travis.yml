@@ -4,21 +4,16 @@ go:
   - "1.10.3"
 
 before_install:
-  - echo "${PATSHOME}"
-  - pwd
   - sudo apt-get update
   - sudo apt-get install -y build-essential
   - sudo apt-get install -y libgmp-dev
   - sudo apt-get install -y libgc-dev
   - sudo apt-get install -y libjson-c-dev
-  - git clone "git://git.code.sf.net/p/ats2-lang/code" ATS2
-  - cd ATS2
-  - ./configure
-  - make all
-  - echo "${PATSHOME}"
+  - git clone "git://git.code.sf.net/p/ats2-lang/code" ${HOME}/ATS2
+  - (cd ${PATSHOME} && ./configure && make all)
 
 env:
-  - PATSHOME=ATS2
+  - PATSHOME=${HOME}/ATS2
 
 script:
   - pwd && go test -v -race -coverprofile=coverage.txt -covermode=atomic ./pkg/...

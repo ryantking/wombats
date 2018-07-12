@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path"
 
@@ -19,59 +20,70 @@ var (
 specified directory if a name is provided. For example:
 	$ wom new     # Initializes a project in the current directory
 	$ wom new foo # Creates the directory foo and initializes a project in it`,
-		Run: runNew,
+		Run: func(cmd *cobra.Command, args []string) {
+			name, err := cmd.Flags().GetString("name")
+			if err != nil {
+				log.Fatalf("Error getting flag: %s", err)
+			}
+
+			err = runNew(name, args...)
+			if err != nil {
+				log.Fatal(err)
+			}
+		},
 	}
 
 	// ErrProjectExists is thrown when a project's directory already exists
 	ErrProjectExists = errors.New("Project already exists")
-
-	name string
 )
 
 func init() {
 	rootCmd.AddCommand(newCmd)
 
-	newCmd.Flags().StringVarP(&name, "name", "n", "[project name]",
+	newCmd.Flags().StringP("name", "n", "",
 		"The name of the project (default the directory name)")
 }
 
-func runNew(cmd *cobra.Command, args []string) {
+func runNew(name string, args ...string) error {
 	if len(args) > 1 {
-		log.Fatalf("Unknown Arguments %v", args[1:])
+		return fmt.Errorf("Unknown Arguments: %v", args[1:])
 	}
 
 	// If a directory is provided, make it and change to it
 	if len(args) > 0 {
 		if err := makeProjectDir(args[0]); err != nil {
-			log.Fatalf("Error creating project: %s", err)
+			return fmt.Errorf("Error creating project: %s", err)
 		}
 	}
 
 	// Assume the name is the current directory if not set
-	projName, err := getProjName()
+	name, err := getProjName(name)
 	if err != nil {
-		log.Fatalf("Error getting project name: %s", err)
+		return fmt.Errorf("Error getting project name: %s", err)
 	}
 
 	// Get the initial config and write it to a file.
-	config := config.New(projName)
+	config := config.New(name)
 	if err := config.Write(); err != nil {
-		log.Fatalf("Error creating Wombats.toml: %s", err)
+		return fmt.Errorf("Error creating Wombats.toml: %s", err)
 	}
+
+	return nil
 }
 
 func makeProjectDir(name string) error {
-	err := os.Mkdir(name, os.ModePerm)
-	if os.IsExist(err) {
+	if _, err := os.Stat(name); !os.IsNotExist(err) {
 		return ErrProjectExists
-	} else if err != nil {
+	}
+
+	if err := os.Mkdir(name, os.ModePerm); err != nil {
 		return err
 	}
 
 	return os.Chdir(name)
 }
 
-func getProjName() (string, error) {
+func getProjName(name string) (string, error) {
 	if name != "" {
 		return name, nil
 	}

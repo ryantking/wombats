@@ -4,7 +4,8 @@ go:
   - "1.10.3"
 
 cache:
-  - ${HOME}/ATS2
+  directories:
+    - ${HOME}/ATS2
 
 before_install:
   - sudo apt-get install -y build-essential

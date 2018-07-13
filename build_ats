@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [[ ! -f ${PATSHOME}/bin/patscc ]]; then
+    git clone "git://git.code.sf.net/p/ats2-lang/code" ${HOME}/ATS2
+    cd ${PATSHOME}
+    ./configure
+    make all
+fi

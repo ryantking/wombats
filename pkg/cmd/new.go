@@ -23,7 +23,7 @@ specified directory if a name is provided. For example:
 		Run: func(cmd *cobra.Command, args []string) {
 			name, err := cmd.Flags().GetString("name")
 			if err != nil {
-				log.Fatalf("Error getting flag: %s", err)
+				log.Fatalf("Error getting flag value")
 			}
 
 			err = runNew(name, args...)
@@ -57,9 +57,12 @@ func runNew(name string, args ...string) error {
 	}
 
 	// Assume the name is the current directory if not set
-	name, err := getProjName(name)
-	if err != nil {
-		return fmt.Errorf("Error getting project name: %s", err)
+	if name == "" {
+		var err error
+		name, err = getProjName()
+		if err != nil {
+			return fmt.Errorf("Error getting project name: %s", err)
+		}
 	}
 
 	// Get the initial config and write it to a file.
@@ -83,11 +86,7 @@ func makeProjectDir(name string) error {
 	return os.Chdir(name)
 }
 
-func getProjName(name string) (string, error) {
-	if name != "" {
-		return name, nil
-	}
-
+func getProjName() (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", err

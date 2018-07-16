@@ -101,17 +101,8 @@ func init() {
 }
 
 func runNew(args ...string) error {
-	// Validate flags and arguments
-	if len(args) > 1 {
-		return fmt.Errorf("found unexpected argument '%s'", args[1])
-	}
-	if small && cats {
-		return fmt.Errorf("can't specify a CATS directory in a small project")
-	}
-	if existing && cats {
-		return fmt.Errorf(
-			"can't specify a CATS directory in a existing project",
-		)
+	if err := validateNewArgs(args); err != nil {
+		return err
 	}
 
 	// If a directory is provided, make it and change to it
@@ -135,7 +126,6 @@ func runNew(args ...string) error {
 		return fmt.Errorf("could not get current directory")
 	}
 
-	// Assume the name is the current directory if not set
 	if name == "" {
 		name = projName
 	}
@@ -147,13 +137,8 @@ func runNew(args ...string) error {
 		return fmt.Errorf("could not create 'Wombats.toml' file")
 	}
 
-	// Initialize a git repo if specified
-	if git {
-		cmd := exec.Command("git", "init")
-		if err := cmd.Run(); err != nil {
-			log.Debugf("git init error: %s", err)
-			log.Errorf("could not initialize git repository")
-		}
+	if err := initGitRepo(); err != nil {
+		return err
 	}
 
 	// If we are working with an existing project, we're done
@@ -161,12 +146,10 @@ func runNew(args ...string) error {
 		return ErrProjectExists
 	}
 
-	// If the small option is not specified, create the directories
-	if !small {
-		if err := createDirs(); err != nil {
-			log.Debugf("mkdir error: %s", err)
-			return fmt.Errorf("could not create directories")
-		}
+	// Create directories
+	if err := createDirs(); err != nil {
+		log.Debugf("mkdir error: %s", err)
+		return fmt.Errorf("could not create directories")
 	}
 
 	// Create default files
@@ -179,6 +162,24 @@ func runNew(args ...string) error {
 	return nil
 }
 
+// validateNewArgs validates the arguments given to new
+func validateNewArgs(args []string) error {
+	if len(args) > 1 {
+		return fmt.Errorf("found unexpected argument '%s'", args[1])
+	}
+	if small && cats {
+		return fmt.Errorf("can't specify a CATS directory in a small project")
+	}
+	if existing && cats {
+		return fmt.Errorf(
+			"can't specify a CATS directory in a existing project",
+		)
+	}
+
+	return nil
+}
+
+// makeProjectDir makes a new directory for the project if specified
 func makeProjectDir(name string) error {
 	if _, err := os.Stat(name); !os.IsNotExist(err) {
 		return ErrProjectExists
@@ -200,7 +201,24 @@ func getProjName() (string, error) {
 	return path.Base(wd), nil
 }
 
+// initGitRepo initializes the git repo if the option is specified
+func initGitRepo() error {
+	if git {
+		cmd := exec.Command("git", "init")
+		if err := cmd.Run(); err != nil {
+			log.Debugf("git init error: %s", err)
+			log.Errorf("could not initialize git repository")
+		}
+	}
+
+	return nil
+}
+
 func createDirs() error {
+	if small {
+		return nil
+	}
+
 	dirs := []string{"SATS", "DATS"}
 	if !lib {
 		dirs = append(dirs, "BUILD")

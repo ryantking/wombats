@@ -6,6 +6,7 @@ type PackageConfig struct {
 	Authors []string
 	Version string
 	License string
+	Small   bool
 }
 
 // DependencyConfig holds information about a dependency.

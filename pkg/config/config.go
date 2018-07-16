@@ -9,7 +9,7 @@ import (
 )
 
 // New creaates an initial config for a new project.
-func New(name string) *Config {
+func New(name string, small bool) *Config {
 	authors := []string{}
 	username, err := gitconfig.Username()
 	if err != nil {
@@ -22,6 +22,7 @@ func New(name string) *Config {
 		Name:    name,
 		Authors: authors,
 		Version: "v0.1",
+		Small:   small,
 	}
 
 	return &Config{Package: pkgCfg}

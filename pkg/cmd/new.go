@@ -8,7 +8,7 @@ import (
 	"path"
 
 	"github.com/RyanTKing/wombats/pkg/config"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -68,7 +68,7 @@ specified directory if a name is provided. For example:
 	}
 
 	// ErrProjectExists is thrown when a project's directory already exists
-	ErrProjectExists = errors.New("Project already exists")
+	ErrProjectExists = errors.New("project already exists")
 
 	// Flags
 	name     string
@@ -76,7 +76,7 @@ specified directory if a name is provided. For example:
 	lib      bool
 	cats     bool
 	small    bool
-	onlyTOML bool
+	existing bool
 )
 
 func init() {
@@ -90,33 +90,49 @@ func init() {
 	newCmd.Flags().BoolVar(&cats, "cats", false, "Create a CATS directory")
 	newCmd.Flags().BoolVar(&small, "small", false,
 		"Use a small project template (no DATS/SATS/BUILD dirs")
-	newCmd.Flags().BoolVar(&onlyTOML, "only-toml", false,
+	newCmd.Flags().BoolVar(&existing, "existing", false,
 		"Only create the TOML file (for existing ATS project")
+
+	if verbose {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.InfoLevel)
+	}
 }
 
 func runNew(args ...string) error {
 	// Validate flags and arguments
 	if len(args) > 1 {
-		return fmt.Errorf("Unknown Arguments: %v", args[1:])
+		return fmt.Errorf("found unexpected argument '%s'", args[1])
 	}
 	if small && cats {
-		return fmt.Errorf("Cannot have CATS directory in small prject")
+		return fmt.Errorf("can't specify a CATS directory in a small project")
 	}
-	if onlyTOML && cats {
-		return fmt.Errorf("Cannot have CATS dir if only-toml is specified")
+	if existing && cats {
+		return fmt.Errorf(
+			"can't specify a CATS directory in a existing project",
+		)
 	}
 
 	// If a directory is provided, make it and change to it
 	if len(args) > 0 {
+		if existing {
+			return fmt.Errorf(
+				"giving a new directory when existing is specified",
+			)
+		}
+
 		if err := makeProjectDir(args[0]); err != nil {
-			return fmt.Errorf("Error creating project: %s", err)
+			log.Debugln("mkdir error: %s", err)
+			return fmt.Errorf("could not create directory '%s'", args[0])
 		}
 	}
 
 	// Get the directory name
 	projName, err := getProjName()
 	if err != nil {
-		return fmt.Errorf("Error getting directory name: %s", err)
+		log.Debugf("get current dir error: %s", err)
+		return fmt.Errorf("could not get current directory")
 	}
 
 	// Assume the name is the current directory if not set
@@ -127,34 +143,39 @@ func runNew(args ...string) error {
 	// Get the initial config and write it to a file.
 	config := config.New(name, small)
 	if err := config.Write(); err != nil {
-		return fmt.Errorf("Error creating Wombats.toml: %s", err)
+		log.Debugf("config write error: %s", err)
+		return fmt.Errorf("could not create 'Wombats.toml' file")
 	}
 
 	// Initialize a git repo if specified
 	if git {
 		cmd := exec.Command("git", "init")
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("Error initializing git repo: %s", err)
+			log.Debugf("git init error: %s", err)
+			log.Errorf("could not initialize git repository")
 		}
 	}
 
-	// If we onyl want the TOML file, we're done so can exit
-	if onlyTOML {
-		return nil
+	// If we are working with an existing project, we're done
+	if existing {
+		return ErrProjectExists
 	}
 
 	// If the small option is not specified, create the directories
 	if !small {
 		if err := createDirs(); err != nil {
-			return fmt.Errorf("Error creating directories: %s", err)
+			log.Debugf("mkdir error: %s", err)
+			return fmt.Errorf("could not create directories")
 		}
 	}
 
 	// Create default files
 	if err := createDefaultFiles(name, projName, small); err != nil {
-		return fmt.Errorf("Error creating default files: %s", err)
+		log.Debugf("create file error: %s", err)
+		return fmt.Errorf("could not create default files")
 	}
 
+	log.Infof("created application '%s' project", name)
 	return nil
 }
 

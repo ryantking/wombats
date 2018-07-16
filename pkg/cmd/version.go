@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/ngaut/log"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -26,21 +26,29 @@ var versionCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
+
+	if verbose {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.InfoLevel)
+	}
 }
 
 func runVersion(args ...string) error {
 	if len(args) > 0 {
-		return fmt.Errorf("Unknown Arguments: %v", args)
+		return fmt.Errorf("found unnexpected argument: %s", args[0])
 	}
 
 	atsVersion, err := getATSVersion()
 	if err != nil {
-		return fmt.Errorf("Error getting ATS version: %s", err)
+		log.Debugf("error getting ATS version: %s", err)
+		return fmt.Errorf("could not get ATS version")
 	}
 
 	gccVersion, err := getGCCVersion()
 	if err != nil {
-		return fmt.Errorf("Error getting gcc version: %s", err)
+		log.Debugf("error getting gcc version: %s", err)
+		return fmt.Errorf("could not get gcc version")
 	}
 
 	fmt.Printf("wombats %s\n", womVersion)

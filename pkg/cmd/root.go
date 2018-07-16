@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/RyanTKing/wombats/pkg/logging"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +22,7 @@ project as follows:
 	$ wom run`,
 	}
 
+	verbose  bool
 	patshome string
 	patscc   string
 )
@@ -33,6 +36,19 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false,
+		"verbose output")
+
+	// Setup Logging
+	logFile := fmt.Sprintf("%s/.wombats.log", os.Getenv("HOME"))
+	f, err := os.OpenFile(logFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Printf("Error opening %s for logging: %s", logFile, err)
+	} else {
+		log.SetOutput(f)
+	}
+	log.AddHook(logging.NewLogrusHook())
+
 	patshome = os.Getenv("PATSHOME")
 	patscc = patshome + "/bin/patscc"
 }

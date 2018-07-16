@@ -15,7 +15,7 @@ type DependencyConfig struct {
 	Source  string
 }
 
-// Config is a struct represention of the Wombats.yaml file that each project
+// Config is a struct representing the Wombats.yaml file that each project
 // must contain.
 type Config struct {
 	Package      PackageConfig

@@ -10,24 +10,37 @@
 > - from [The Wombat](https://www.poemhunter.com/poem/the-wombat-2/) by Dante Gabriel Rosetti
 
 Wombats is a package manager and build system for ATS in order to automate
-building and deploying packages. Inspired by the likes of Go and Cargo.
+building and deploying packages.
+
+Inspired by the likes of [Go](https://github.com/golang/go), [Cargo](https://github.com/rust-lang/cargo), and [Leiningen](https://github.com/technomancy/leiningen).
+
+**Note:** There is currently no server setup to manage the language packages,
+so this is not ready for use out side of experimental use.
 
 # Installation
 
-Currently, Wombats does not live on a server yet so can only be run locally.
-"wom" is the client and build tool and "womd" is the daemon that runs the
-server.
+Currently, Wombats is not on any package managers, but can easily be installed
+using go:
 
     $ go get github.com/RyanTKing/wombats/cmd/wom
-    $ go get github.com/RyanTKing/wombats/cmd/womd
+
+ATS is also required, and instructions for that can be found on [my blog](http://ryanking.com/blog/joy-of-ats-1-installing-ats/).
+
 
 # Usage
 
-TODO
+A project can be initialized and ran as follows:
 
-# Configuration
+    $ wom new [DIR] -n [NAME]
+    $ wom run
 
-TODO
+The following commands are available:
+
+    $ wom new [DIR] # Create a new project
+    $ wom build # Build the current project (unimplemented)
+    $ wom install # Install the current project (unimplemented)
+    $ wom version # Show ATS version information (unimplemented)
+    $ wom fetch # Fetch all specified dependencies (unimplemented)
 
 # License
 

@@ -37,10 +37,12 @@ A project can be initialized and ran as follows:
 The following commands are available:
 
     $ wom new [DIR] # Create a new project
+    $ wom run # Run project and build if necessary (works for basic project)
     $ wom build # Build the current project (unimplemented)
     $ wom install # Install the current project (unimplemented)
-    $ wom version # Show ATS version information (unimplemented)
+    $ wom version # Show ATS version information
     $ wom fetch # Fetch all specified dependencies (unimplemented)
+    $ wom fetch [PKG] # Fetches a package (unimplemented)
 
 # License
 

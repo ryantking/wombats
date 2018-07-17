@@ -24,15 +24,14 @@ func New(name, entryPoint string, small bool, patscc string) *Builder {
 }
 
 func (b *Builder) cleanup() {
-	os.RemoveAll("./**/*.{d,s}ats_c")
+	os.RemoveAll("./**/*_{d,s}ats.c")
 }
 
 // Build compiles the project
 func (b *Builder) Build() error {
 	defer b.cleanup()
 
-	args := fmt.Sprintf("-o %s %s", b.ExecFile, b.EntryPoint)
-	cmd := exec.Command(b.Patscc, args)
+	cmd := exec.Command(b.Patscc, "-o", b.ExecFile, b.EntryPoint)
 	cmd.Env = os.Environ()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

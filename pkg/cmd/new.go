@@ -136,23 +136,21 @@ func runNew(args ...string) error {
 	}
 
 	// If we are working with an existing project, we're done
-	if existing {
-		return ErrProjectExists
+	if !existing {
+		// Create directories
+		if err := createDirs(); err != nil {
+			log.Debugf("mkdir error: %s", err)
+			return fmt.Errorf("could not create directories")
+		}
+
+		// Create default files
+		if err := createDefaultFiles(name, projName, small); err != nil {
+			log.Debugf("create file error: %s", err)
+			return fmt.Errorf("could not create default files")
+		}
 	}
 
-	// Create directories
-	if err := createDirs(); err != nil {
-		log.Debugf("mkdir error: %s", err)
-		return fmt.Errorf("could not create directories")
-	}
-
-	// Create default files
-	if err := createDefaultFiles(name, projName, small); err != nil {
-		log.Debugf("create file error: %s", err)
-		return fmt.Errorf("could not create default files")
-	}
-
-	log.Infof("created application '%s' project", name)
+	log.Infof("Created application '%s' project", name)
 	return nil
 }
 

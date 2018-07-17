@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	info = color.New(color.FgGreen).Add(color.Bold)
-	warn = color.New(color.FgYellow).Add(color.Bold)
-	err  = color.New(color.FgRed).Add(color.Bold)
+	info   = color.New(color.FgGreen).Add(color.Bold)
+	warn   = color.New(color.FgYellow).Add(color.Bold)
+	err    = color.New(color.FgRed).Add(color.Bold)
+	spaces = 4
 )
 
 // NewLogrusHook returns the hook for adding to logrus
@@ -34,6 +35,11 @@ func (lh LogrusHook) Levels() []log.Level {
 
 // Fire prints out logrus messages to stdout
 func (lh LogrusHook) Fire(e *log.Entry) error {
+	for i := 0; i < spaces; i++ {
+		fmt.Print(" ")
+	}
+	spaces++
+
 	switch e.Level {
 	case log.InfoLevel:
 		words := strings.Split(e.Message, " ")

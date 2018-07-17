@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
+	"time"
 
 	"github.com/RyanTKing/wombats/pkg/builder"
 	"github.com/RyanTKing/wombats/pkg/config"
@@ -49,15 +49,28 @@ func runRun(cmd *cobra.Command, args []string) {
 	b := builder.New(projName, config.Package.EntryPoint, config.Package.Small,
 		patscc)
 	if _, err := os.Stat(executable); os.IsNotExist(err) {
+		log.Infof("Building '%s' project")
+		start := time.Now()
 		if err := b.Build(); err != nil {
 			log.Debugf("build error: %s", err)
-			log.Fatalf("could not build '%s' project", config.Package.Name)
+			log.Fatalf("could not build", config.Package.Name)
 		}
 
-		log.Infof("compiled '%s' project", config.Package.Name)
+		dur := time.Since(start)
+		unit := "s"
+		t := dur.Seconds()
+		if t >= 60 && t < 3600 {
+			unit = "m"
+			t = dur.Minutes()
+		} else if t >= 36000 {
+			unit = "h"
+			t = dur.Hours()
+		}
+		log.Infof("Finished building in %.2f%s", t, unit)
 	}
 
-	execCmd := exec.Command(b.ExecFile, strings.Join(args, " "))
+	log.Infof("Running '%s'", b.ExecFile)
+	execCmd := exec.Command(b.ExecFile, args...)
 	execCmd.Env = os.Environ()
 	execCmd.Stdout = os.Stdout
 	execCmd.Stderr = os.Stderr
@@ -66,5 +79,4 @@ func runRun(cmd *cobra.Command, args []string) {
 		log.Fatalf("could not run '%s' project", config.Package.Name)
 	}
 
-	log.Infof("successfully ran '%s' project", b.ExecFile)
 }

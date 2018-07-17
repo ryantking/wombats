@@ -92,12 +92,6 @@ func init() {
 		"Use a small project template (no DATS/SATS/BUILD dirs")
 	newCmd.Flags().BoolVar(&existing, "existing", false,
 		"Only create the TOML file (for existing ATS project")
-
-	if verbose {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
-	}
 }
 
 func runNew(args ...string) error {
@@ -131,7 +125,7 @@ func runNew(args ...string) error {
 	}
 
 	// Get the initial config and write it to a file.
-	config := config.New(name, small)
+	config := config.New(name, projName, small)
 	if err := config.Write(); err != nil {
 		log.Debugf("config write error: %s", err)
 		return fmt.Errorf("could not create 'Wombats.toml' file")

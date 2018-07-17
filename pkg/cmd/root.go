@@ -7,6 +7,7 @@ import (
 	"github.com/RyanTKing/wombats/pkg/logging"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -20,9 +21,18 @@ A project can be initialized and ran in the directory of an existing ATS
 project as follows:
 	$ wom new
 	$ wom run`,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			viper.BindPFlags(cmd.Flags())
+			viper.BindPFlag("verbose", cmd.Flags().Lookup("verbose"))
+
+			if viper.GetBool("verbose") {
+				log.SetLevel(log.DebugLevel)
+			} else {
+				log.SetLevel(log.InfoLevel)
+			}
+		},
 	}
 
-	verbose  bool
 	patshome string
 	patscc   string
 )
@@ -36,8 +46,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false,
-		"verbose output")
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "verbose output")
 
 	// Setup Logging
 	logFile := fmt.Sprintf("%s/.wombats.log", os.Getenv("HOME"))
@@ -47,6 +56,8 @@ func init() {
 	} else {
 		log.SetOutput(f)
 	}
+
+	log.SetFormatter(new(log.TextFormatter))
 	log.AddHook(logging.NewLogrusHook())
 
 	patshome = os.Getenv("PATSHOME")

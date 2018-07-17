@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
-	"syscall"
+	"os/exec"
+	"strings"
 
 	"github.com/RyanTKing/wombats/pkg/builder"
 	"github.com/RyanTKing/wombats/pkg/config"
@@ -35,12 +38,18 @@ func runRun(cmd *cobra.Command, args []string) {
 		)
 	}
 
-	executable := fmt.Sprintf("./BUILD/%s", config.Package.Name)
-	if config.Package.Small {
-		executable = fmt.Sprintf("./%s", config.Package.Name)
+	projName, err := getProjName()
+	if err != nil {
+		log.Fatalf("could not build '%s' project", config.Package.Name)
 	}
 
-	b := builder.New(config.Package.Name, config.Package.Small, patscc)
+	executable := fmt.Sprintf("./BUILD/%s", projName)
+	if config.Package.Small {
+		executable = fmt.Sprintf("./%s", projName)
+	}
+
+	b := builder.New(projName, config.Package.EntryPoint, config.Package.Small,
+		patscc)
 	if _, err := os.Stat(executable); os.IsNotExist(err) {
 		if err := b.Build(); err != nil {
 			log.Debugf("build error: %s", err)
@@ -50,9 +59,25 @@ func runRun(cmd *cobra.Command, args []string) {
 		log.Infof("compiled '%s' project", config.Package.Name)
 	}
 
-	env := os.Environ()
-	if err := syscall.Exec(b.ExecFile, args, env); err != nil {
-		log.Fatalf("encountered error while running '%s' project", b.ExecFile)
-	}
+	origStdout := os.Stdout
+	r, w, err := os.Pipe()
+	os.Stdout = w
+	execCmd := exec.Command(b.ExecFile, strings.Join(args, " "))
+	execCmd.Start()
+	outC := make(chan string)
+	go func() {
+		for out := range outC {
+			fmt.Print(out)
+		}
+	}()
+	go func() {
+		var buf bytes.Buffer
+		io.Copy(&buf, r)
+		outC <- buf.String()
+	}()
+	execCmd.Wait()
+	w.Close()
+	os.Stdout = origStdout
+
 	log.Infof("successfully ran '%s' project", b.ExecFile)
 }

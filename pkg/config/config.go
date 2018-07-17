@@ -14,7 +14,7 @@ import (
 var ErrNoConfigFile = fmt.Errorf("Could not locate config file")
 
 // New creaates an initial config for a new project.
-func New(name string, small bool) *Config {
+func New(name, projName string, small bool) *Config {
 	authors := []string{}
 	username, err := gitconfig.Username()
 	if err != nil {
@@ -23,11 +23,17 @@ func New(name string, small bool) *Config {
 		authors = []string{username}
 	}
 
+	entryPoint := fmt.Sprintf("./DATS/%s.dats", projName)
+	if small {
+		entryPoint = fmt.Sprintf("./%s.dats", projName)
+	}
+
 	pkgCfg := PackageConfig{
-		Name:    name,
-		Authors: authors,
-		Version: "v0.1",
-		Small:   small,
+		Name:       name,
+		Authors:    authors,
+		Version:    "v0.1",
+		EntryPoint: entryPoint,
+		Small:      small,
 	}
 
 	return &Config{Package: pkgCfg}

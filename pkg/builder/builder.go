@@ -1,25 +1,25 @@
 package builder
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 )
 
 // New creates a new builder
-func New(name string, small bool, patscc string) *Builder {
-	datsDir := "./DATS/*.dats"
+func New(name, entryPoint string, small bool, patscc string) *Builder {
 	execFile := fmt.Sprintf("./BUILD/%s", name)
 	if small {
-		datsDir = "./*.dats"
 		execFile = fmt.Sprintf("./%s", name)
 	}
 
 	return &Builder{
-		ProjName: name,
-		DATSDir:  datsDir,
-		ExecFile: execFile,
-		Patscc:   patscc,
+		ProjName:   name,
+		ExecFile:   execFile,
+		EntryPoint: entryPoint,
+		Patscc:     patscc,
 	}
 }
 
@@ -30,6 +30,27 @@ func (b *Builder) cleanup() {
 // Build compiles the project
 func (b *Builder) Build() error {
 	defer b.cleanup()
-	cmd := exec.Command(b.Patscc, "-o", b.ExecFile, b.DATSDir)
-	return cmd.Run()
+
+	args := fmt.Sprintf("-o %s %s", b.ExecFile, b.EntryPoint)
+	origStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+	execCmd := exec.Command(b.Patscc, args)
+	execCmd.Start()
+	outC := make(chan string)
+	go func() {
+		for out := range outC {
+			fmt.Print(out)
+		}
+	}()
+	go func() {
+		var buf bytes.Buffer
+		io.Copy(&buf, r)
+		outC <- buf.String()
+	}()
+	execCmd.Wait()
+	w.Close()
+	os.Stdout = origStdout
+
+	return nil
 }

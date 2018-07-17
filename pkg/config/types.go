@@ -2,11 +2,12 @@ package config
 
 // PackageConfig holds the global package information.
 type PackageConfig struct {
-	Name    string
-	Authors []string
-	Version string
-	License string
-	Small   bool
+	Name       string
+	Authors    []string
+	Version    string
+	License    string
+	EntryPoint string
+	Small      bool
 }
 
 // DependencyConfig holds information about a dependency.

@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -59,25 +57,14 @@ func runRun(cmd *cobra.Command, args []string) {
 		log.Infof("compiled '%s' project", config.Package.Name)
 	}
 
-	origStdout := os.Stdout
-	r, w, err := os.Pipe()
-	os.Stdout = w
 	execCmd := exec.Command(b.ExecFile, strings.Join(args, " "))
-	execCmd.Start()
-	outC := make(chan string)
-	go func() {
-		for out := range outC {
-			fmt.Print(out)
-		}
-	}()
-	go func() {
-		var buf bytes.Buffer
-		io.Copy(&buf, r)
-		outC <- buf.String()
-	}()
-	execCmd.Wait()
-	w.Close()
-	os.Stdout = origStdout
+	execCmd.Env = os.Environ()
+	execCmd.Stdout = os.Stdout
+	execCmd.Stderr = os.Stderr
+	if err := execCmd.Run(); err != nil {
+		log.Debugf("error running '%s': %s", config.Package.Name, err)
+		log.Fatalf("could not run '%s' project", config.Package.Name)
+	}
 
 	log.Infof("successfully ran '%s' project", b.ExecFile)
 }

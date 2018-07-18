@@ -5,5 +5,4 @@ type Builder struct {
 	ProjName   string
 	EntryPoint string
 	ExecFile   string
-	Patscc     string
 }

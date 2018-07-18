@@ -46,10 +46,9 @@ func runRun(cmd *cobra.Command, args []string) {
 		executable = fmt.Sprintf("./%s", projName)
 	}
 
-	b := builder.New(projName, config.Package.EntryPoint, config.Package.Small,
-		patscc)
+	b := builder.New(projName, config.Package.EntryPoint, config.Package.Small)
 	if _, err := os.Stat(executable); os.IsNotExist(err) {
-		log.Infof("Building '%s' project")
+		log.Infof("Building '%s' project", config.Package.Name)
 		start := time.Now()
 		if err := b.Build(); err != nil {
 			log.Debugf("build error: %s", err)

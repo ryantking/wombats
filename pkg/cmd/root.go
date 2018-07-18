@@ -59,7 +59,4 @@ func init() {
 
 	log.SetFormatter(new(log.TextFormatter))
 	log.AddHook(logging.NewLogrusHook())
-
-	patshome = os.Getenv("PATSHOME")
-	patscc = patshome + "/bin/patscc"
 }

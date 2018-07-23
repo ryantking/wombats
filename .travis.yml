@@ -15,8 +15,8 @@ before_install:
   - ./build_ats
 
 env:
-  - PATSHOME=${HOME}/ATS2
-  - PATH=${PATSHOME}/bin:${PATH}
+  - PATSHOME="${HOME}/ATS2"
+  - PATH="${PATSHOME}/bin:${PATH}"
 
 script:
   - pwd && go test -v -race -coverprofile=coverage.txt -covermode=atomic ./pkg/...

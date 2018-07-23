@@ -7,7 +7,6 @@ type PackageConfig struct {
 	Version    string
 	License    string
 	EntryPoint string
-	Small      bool
 }
 
 // DependencyConfig holds information about a dependency.

@@ -33,7 +33,6 @@ func New(name, projName string, small bool) *Config {
 		Authors:    authors,
 		Version:    "v0.1",
 		EntryPoint: entryPoint,
-		Small:      small,
 	}
 
 	return &Config{Package: pkgCfg}

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"time"
@@ -41,13 +40,8 @@ func runRun(cmd *cobra.Command, args []string) {
 		log.Fatalf("could not build '%s' project", config.Package.Name)
 	}
 
-	executable := fmt.Sprintf("./BUILD/%s", projName)
-	if config.Package.Small {
-		executable = fmt.Sprintf("./%s", projName)
-	}
-
-	b := builder.New(projName, config.Package.EntryPoint, config.Package.Small)
-	if _, err := os.Stat(executable); os.IsNotExist(err) {
+	b := builder.New(projName, config.Package.EntryPoint)
+	if _, err := os.Stat(b.ExecFile); os.IsNotExist(err) {
 		log.Infof("Building '%s' project", config.Package.Name)
 		start := time.Now()
 		if err := b.Build(); err != nil {

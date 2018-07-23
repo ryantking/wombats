@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/RyanTKing/wombats/pkg/ats"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -54,33 +55,20 @@ func runVersion(args ...string) error {
 }
 
 func getATSVersion() (string, error) {
-	cmd := exec.Command("patscc", "-vats")
-	stdout, err := cmd.StdoutPipe()
+	out, err := ats.ExecPatsccOutput("-vats")
 	if err != nil {
 		return "", err
 	}
-	if err := cmd.Start(); err != nil {
-		return "", err
-	}
-	version, err := ioutil.ReadAll(stdout)
-	if err != nil {
-		return "", err
-	}
-	if err = cmd.Wait(); err != nil {
-		return "", err
-	}
-
 	r, err := regexp.Compile("version [\\d+.?]+")
 	if err != nil {
 		return "", err
 	}
-
-	parsedVersion := r.FindString(string(version))
-	if parsedVersion == "" {
-		return "", fmt.Errorf("Could not find ATS version")
+	version := r.FindString(out)
+	if version == "" {
+		return "", fmt.Errorf("could not find ATS version")
 	}
 
-	return strings.Split(parsedVersion, " ")[1], nil
+	return strings.Split(version, " ")[1], nil
 }
 
 func getGCCVersion() (string, error) {

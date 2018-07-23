@@ -59,6 +59,18 @@ func init() {
 	}
 }
 
+// ExecPatsccOutput executes a patscc command and returns its output
+func ExecPatsccOutput(args ...string) (string, error) {
+	cmd := exec.Command(Patscc, args...)
+	cmd.Env = os.Environ()
+	out, err := cmd.Output()
+	if err != nil {
+		log.Debugf("patscc error: %s", err)
+		return "", err
+	}
+	return string(out), nil
+}
+
 // ExecPatscc executes a patscc command
 func ExecPatscc(args ...string) error {
 	cmd := exec.Command(Patscc, args...)

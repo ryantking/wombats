@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -53,13 +54,33 @@ func runVersion(args ...string) error {
 }
 
 func getATSVersion() (string, error) {
-	versionPath := fmt.Sprintf("%s/VERSION", patshome)
-	version, err := ioutil.ReadFile(versionPath)
+	cmd := exec.Command("patscc", "-vats")
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return "", err
+	}
+	if err := cmd.Start(); err != nil {
+		return "", err
+	}
+	version, err := ioutil.ReadAll(stdout)
+	if err != nil {
+		return "", err
+	}
+	if err = cmd.Wait(); err != nil {
+		return "", err
+	}
+
+	r, err := regexp.Compile("version [\\d+.?]+")
 	if err != nil {
 		return "", err
 	}
 
-	return strings.TrimSpace(string(version)), nil
+	parsedVersion := r.FindString(string(version))
+	if parsedVersion == "" {
+		return "", fmt.Errorf("Could not find ATS version")
+	}
+
+	return strings.Split(parsedVersion, " ")[1], nil
 }
 
 func getGCCVersion() (string, error) {

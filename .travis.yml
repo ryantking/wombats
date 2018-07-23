@@ -16,6 +16,7 @@ before_install:
 
 env:
   - PATSHOME=${HOME}/ATS2
+  - PATH=${PATSHOME}/bin:${PATH}
 
 script:
   - pwd && go test -v -race -coverprofile=coverage.txt -covermode=atomic ./pkg/...

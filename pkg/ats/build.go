@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/RyanTKing/wombats/pkg/logging"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -62,9 +63,10 @@ func Build(name, entryPoint string) string {
 	}
 
 	log.Infof("Building '%s' project", name)
-	if err := ExecPatscc("-o", execFile, entryPoint); err != nil {
-		log.Debugf("build error: %s", err)
-		log.Fatalln("could not build")
+	out, err := ExecPatsccOutput("-o", execFile, entryPoint)
+	if err != nil {
+		logging.CheckErrors(strings.TrimSpace(out))
+		log.Fatalln("build failed")
 	}
 
 	dur := time.Since(start)

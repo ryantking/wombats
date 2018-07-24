@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -15,6 +16,19 @@ const (
 	typeRegex  = `^The (actual|needed) term is: (.+)$`
 	countRegex = `^patsopt\(\w+\): there are \[(\d+)\] errors in total.$`
 )
+
+// CheckErrors checks output for errors and prints them
+func CheckErrors(output string) {
+	lines := strings.Split(output, "\n")
+
+	atsErrors := ParseErrors(lines)
+	for _, e := range atsErrors {
+		if e.Type() == ErrorCount {
+			fmt.Print(" ")
+		}
+		e.Print()
+	}
+}
 
 // ParseErrors parses a series of output lines and returns the errors
 func ParseErrors(lines []string) []ATSErrorLine {

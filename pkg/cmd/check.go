@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/RyanTKing/wombats/pkg/ats"
@@ -51,12 +50,5 @@ func runCheck(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	lines := strings.Split(strings.TrimSpace(output), "\n")
-	atsErrors := logging.ParseErrors(lines)
-	for _, e := range atsErrors {
-		if e.Type() == logging.ErrorCount {
-			fmt.Print(" ")
-		}
-		e.Print()
-	}
+	logging.CheckErrors(strings.TrimSpace(output))
 }

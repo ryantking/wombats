@@ -3,6 +3,7 @@ package ats
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -49,7 +50,7 @@ func shouldBuild(execFile string, small bool) bool {
 }
 
 // Build compiles an ATS project
-func Build(name, entryPoint string) string {
+func Build(name, entryPoint string, clibs []string) string {
 	start := time.Now()
 	execFile := fmt.Sprintf("./BUILD/%s", name)
 	small := false
@@ -62,8 +63,17 @@ func Build(name, entryPoint string) string {
 		return execFile
 	}
 
+	args := append(clibs, "--cflags", "--libs")
+	pkgCfg := exec.Command("pkg-config", args...)
+	cflagsRaw, err := pkgCfg.Output()
+	if err != nil {
+		log.Fatalln("could not get clib config")
+	}
+	cflags := strings.Split(strings.TrimSpace(string(cflagsRaw)), " ")
+
 	log.Infof("Building '%s' project", name)
-	out, err := ExecPatsccOutput("-o", execFile, entryPoint)
+	patsccArgs := append([]string{"-w", "-o", execFile, entryPoint, "-DATS_MEMALLOC_LIBC"}, cflags...)
+	out, err := ExecPatsccOutput(patsccArgs...)
 	if err != nil {
 		logging.CheckErrors(strings.TrimSpace(out))
 		log.Fatalln("build failed")

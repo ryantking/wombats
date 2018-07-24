@@ -44,7 +44,7 @@ func runCheck(cmd *cobra.Command, args []string) {
 	}
 
 	log.Infof("Typechecking '%s' project", config.Package.Name)
-	output, err := ats.ExecPatsccOutput("-tcats", "./**/*.dats", "./**/*.sats")
+	output, err := ats.ExecPatsccOutput("-tcats", "./**/*.[dshc]ats")
 	if err == nil {
 		log.Info("Found no typechecking errors")
 		return

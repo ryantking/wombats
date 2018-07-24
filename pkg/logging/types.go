@@ -24,22 +24,38 @@ type LogrusHook struct {
 // ATSErrorLine holds information about various ATS errors
 type ATSErrorLine interface {
 	Type() ATSErrorType
+	Print()
 }
 
 // ATSLineError holds information about an error reported by patscc
 type ATSLineError struct {
 	Fname                      string
 	StartL, EndL, StartO, EndO int
-	Errors                     []string
+	Error                      string
 }
 
-// ATSErrorCount holds the number of errors that occured
-type ATSErrorCount struct {
+// Type ...
+func (e *ATSLineError) Type() ATSErrorType {
+	return LineError
+}
+
+// ATSCountError holds the number of errors that occured
+type ATSCountError struct {
 	Count int
+}
+
+// Type ...
+func (e *ATSCountError) Type() ATSErrorType {
+	return ErrorCount
 }
 
 // ATSTypeError holds info about an ATS type error
 type ATSTypeError struct {
 	Status  string
 	ATSType string
+}
+
+// Type ...
+func (e *ATSTypeError) Type() ATSErrorType {
+	return TypeError
 }

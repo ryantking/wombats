@@ -32,9 +32,6 @@ project as follows:
 			}
 		},
 	}
-
-	patshome string
-	patscc   string
 )
 
 // Execute is the entry point for wombats

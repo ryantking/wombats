@@ -3,9 +3,8 @@ package cmd
 import (
 	"os"
 	"os/exec"
-	"time"
 
-	"github.com/RyanTKing/wombats/pkg/builder"
+	"github.com/RyanTKing/wombats/pkg/ats"
 	"github.com/RyanTKing/wombats/pkg/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -40,30 +39,9 @@ func runRun(cmd *cobra.Command, args []string) {
 		log.Fatalf("could not build '%s' project", config.Package.Name)
 	}
 
-	b := builder.New(projName, config.Package.EntryPoint)
-	if _, err := os.Stat(b.ExecFile); os.IsNotExist(err) {
-		log.Infof("Building '%s' project", config.Package.Name)
-		start := time.Now()
-		if err := b.Build(); err != nil {
-			log.Debugf("build error: %s", err)
-			log.Fatalf("could not build", config.Package.Name)
-		}
-
-		dur := time.Since(start)
-		unit := "s"
-		t := dur.Seconds()
-		if t >= 60 && t < 3600 {
-			unit = "m"
-			t = dur.Minutes()
-		} else if t >= 36000 {
-			unit = "h"
-			t = dur.Hours()
-		}
-		log.Infof("Finished building in %.2f%s", t, unit)
-	}
-
-	log.Infof("Running '%s'", b.ExecFile)
-	execCmd := exec.Command(b.ExecFile, args...)
+	execFile := ats.Build(projName, config.Package.EntryPoint)
+	log.Infof("Running '%s'", execFile)
+	execCmd := exec.Command(execFile, args...)
 	execCmd.Env = os.Environ()
 	execCmd.Stdout = os.Stdout
 	execCmd.Stderr = os.Stderr

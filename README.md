@@ -39,7 +39,7 @@ The following commands are available:
     $ wom new [DIR] # Create a new project
     $ wom run # Run project and build if necessary (works for basic project)
     $ wom check # Typecheck the project
-    $ wom build # Build the current project (unimplemented)
+    $ wom build # Build the current project
     $ wom install # Install the current project (unimplemented)
     $ wom version # Show ATS version information
     $ wom fetch # Fetch all specified dependencies (unimplemented)

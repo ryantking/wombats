@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/RyanTKing/wombats/pkg/ats"
+	"github.com/RyanTKing/wombats/pkg/config"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -23,5 +24,19 @@ func init() {
 }
 
 func runBuild(cmd *cobra.Command, args []string) {
-	fmt.Println("build called")
+	config, err := config.Read()
+	if err != nil {
+		log.Debugf("error reading config: %s", err)
+		log.Fatalf(
+			"could not find '%s' in this directory or any parent directory",
+			"Wombats.toml",
+		)
+	}
+
+	projName, err := getProjName()
+	if err != nil {
+		log.Fatalf("could not build '%s' project", config.Package.Name)
+	}
+
+	ats.Build(projName, config.Package.EntryPoint)
 }

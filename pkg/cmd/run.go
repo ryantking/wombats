@@ -43,6 +43,7 @@ func runRun(cmd *cobra.Command, args []string) {
 	log.Infof("Running '%s'", execFile)
 	execCmd := exec.Command(execFile, args...)
 	execCmd.Env = os.Environ()
+	execCmd.Stdin = os.Stdin
 	execCmd.Stdout = os.Stdout
 	execCmd.Stderr = os.Stderr
 	if err := execCmd.Run(); err != nil {

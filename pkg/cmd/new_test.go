@@ -38,7 +38,6 @@ func (s *newTestSuite) TearDownTest() {
 	lib = false
 	cats = false
 	small = false
-	existing = false
 
 	// Go to starting directory
 	err := os.Chdir(origDir)

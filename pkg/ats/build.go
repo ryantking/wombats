@@ -64,7 +64,8 @@ func removeDuplicates(args []string) []string {
 }
 
 func getArgs(execFile, entryPoint string, clibs []string) []string {
-	args := []string{"-w", "-o", execFile, entryPoint, "-DATS_MEMALLOC_LIBC"}
+	args := []string{"-w", "-o", execFile, entryPoint, "-DATS_MEMALLOC_LIBC",
+		"-latslib", "-ljson-c"}
 	if len(clibs) == 0 {
 		return args
 	}

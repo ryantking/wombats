@@ -71,12 +71,11 @@ specified directory if a name is provided. For example:
 	ErrProjectExists = errors.New("project already exists")
 
 	// Flags
-	name     string
-	git      bool
-	lib      bool
-	cats     bool
-	small    bool
-	existing bool
+	name  string
+	git   bool
+	lib   bool
+	cats  bool
+	small bool
 )
 
 func init() {
@@ -90,8 +89,6 @@ func init() {
 	newCmd.Flags().BoolVar(&cats, "cats", false, "Create a CATS directory")
 	newCmd.Flags().BoolVar(&small, "small", false,
 		"Use a small project template (no DATS/SATS/BUILD dirs")
-	newCmd.Flags().BoolVar(&existing, "existing", false,
-		"Only create the TOML file (for existing ATS project")
 }
 
 func runNew(args ...string) error {
@@ -99,18 +96,10 @@ func runNew(args ...string) error {
 		return err
 	}
 
-	// If a directory is provided, make it and change to it
-	if len(args) > 0 {
-		if existing {
-			return fmt.Errorf(
-				"giving a new directory when existing is specified",
-			)
-		}
-
-		if err := makeProjectDir(args[0]); err != nil {
-			log.Debugln("mkdir error: %s", err)
-			return fmt.Errorf("could not create directory '%s'", args[0])
-		}
+	// Make the directory and switch to it
+	if err := makeProjectDir(args[0]); err != nil {
+		log.Debugln("mkdir error: %s", err)
+		return fmt.Errorf("could not create directory '%s'", args[0])
 	}
 
 	// Get the directory name
@@ -135,19 +124,16 @@ func runNew(args ...string) error {
 		return err
 	}
 
-	// If we are working with an existing project, we're done
-	if !existing {
-		// Create directories
-		if err := createDirs(); err != nil {
-			log.Debugf("mkdir error: %s", err)
-			return fmt.Errorf("could not create directories")
-		}
+	// Create directories
+	if err := createDirs(); err != nil {
+		log.Debugf("mkdir error: %s", err)
+		return fmt.Errorf("could not create directories")
+	}
 
-		// Create default files
-		if err := createDefaultFiles(name, projName, small); err != nil {
-			log.Debugf("create file error: %s", err)
-			return fmt.Errorf("could not create default files")
-		}
+	// Create default files
+	if err := createDefaultFiles(name, projName, small); err != nil {
+		log.Debugf("create file error: %s", err)
+		return fmt.Errorf("could not create default files")
 	}
 
 	log.Infof("Created application '%s' project", name)
@@ -156,16 +142,14 @@ func runNew(args ...string) error {
 
 // validateNewArgs validates the arguments given to new
 func validateNewArgs(args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("no project path provided")
+	}
 	if len(args) > 1 {
 		return fmt.Errorf("found unexpected argument '%s'", args[1])
 	}
 	if small && cats {
 		return fmt.Errorf("can't specify a CATS directory in a small project")
-	}
-	if existing && cats {
-		return fmt.Errorf(
-			"can't specify a CATS directory in a existing project",
-		)
 	}
 
 	return nil

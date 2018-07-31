@@ -2,7 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
+	"github.com/RyanTKing/wombats/pkg/ats"
+	"github.com/RyanTKing/wombats/pkg/config"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -22,5 +27,39 @@ func init() {
 }
 
 func runInstall(cmd *cobra.Command, args []string) {
-	fmt.Println("run called")
+	config, err := config.Read()
+	if err != nil {
+		log.Debugf("error reading config: %s", err)
+		log.Fatalf(
+			"could not find '%s' in this directory or any parent directory",
+			"Wombats.toml",
+		)
+	}
+
+	patshome := os.Getenv("PATSHOME")
+	if _, err := os.Stat(patshome); err != nil {
+		log.Fatal("could not find PATSHOME location")
+	}
+	bin := fmt.Sprintf("%s/bin", patshome)
+
+	projName, err := getProjName()
+	if err != nil {
+		log.Fatalf("could not build '%s' project", config.Package.Name)
+	}
+
+	execFile := ats.Build(projName, config.Package.EntryPoint,
+		config.Package.Clibs)
+	log.Infof("installing '%s' to '%s'", filepath.Base(execFile), bin)
+
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal("could not get current directory")
+	}
+
+	absExecFile := fmt.Sprintf("%s/%s", wd, execFile[2:])
+	globalExecFile := fmt.Sprintf("%s/%s", bin, execFile[2:])
+	if err = os.Rename(absExecFile, globalExecFile); err != nil {
+		log.Fatalf("could not install '%s' to '%s'", absExecFile, bin)
+	}
+	log.Infof("Installed '%s' to '%s'", execFile, globalExecFile)
 }

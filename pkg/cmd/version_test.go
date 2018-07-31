@@ -12,11 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestVersionUnknownArgs(t *testing.T) {
-	err := runVersion("arg1", "arg2")
-	assert.NotNil(t, err)
-}
-
 func TestGetVersions(t *testing.T) {
 	womVersionStr := fmt.Sprintf("wombats %s", womVersion)
 	atsVersion, err := getATSVersion()
@@ -30,8 +25,7 @@ func TestGetVersions(t *testing.T) {
 	r, w, err := os.Pipe()
 	require.Nil(t, err)
 	os.Stdout = w
-	err = runVersion()
-	require.Nil(t, err)
+	runVersion(nil, []string{})
 	outC := make(chan string, 5)
 	go func() {
 		var buf bytes.Buffer

@@ -60,55 +60,64 @@ var (
 specified directory if a name is provided. For example:
 	$ wom new     # Initializes a project in the current directory
 	$ wom new foo # Creates the directory foo and initializes a project in it`,
-		Run: func(cmd *cobra.Command, args []string) {
-			if err := runNew(args...); err != nil {
-				log.Fatal(err)
-			}
-		},
+		Run: runNew,
 	}
 
 	// ErrProjectExists is thrown when a project's directory already exists
 	ErrProjectExists = errors.New("project already exists")
-
-	// Flags
-	name  string
-	git   bool
-	lib   bool
-	cats  bool
-	small bool
 )
 
 func init() {
 	rootCmd.AddCommand(newCmd)
 
-	newCmd.Flags().StringVarP(&name, "name", "n", "",
+	newCmd.Flags().StringP("name", "n", "",
 		"The name of the project (default the directory name)")
-	newCmd.Flags().BoolVar(&git, "git", false,
-		"Initialize a new git repository.")
-	newCmd.Flags().BoolVar(&lib, "lib", false, "Dont create a build directory")
-	newCmd.Flags().BoolVar(&cats, "cats", false, "Create a CATS directory")
-	newCmd.Flags().BoolVar(&small, "small", false,
+	newCmd.Flags().Bool("git", false, "Initialize a new git repository.")
+	newCmd.Flags().Bool("lib", false, "Dont create a build directory")
+	newCmd.Flags().Bool("cats", false, "Create a CATS directory")
+	newCmd.Flags().Bool("small", false,
 		"Use a small project template (no DATS/SATS/BUILD dirs")
 }
 
-func runNew(args ...string) error {
-	if err := validateNewArgs(args); err != nil {
-		return err
+func runNew(cmd *cobra.Command, args []string) {
+	small, err := cmd.Flags().GetBool("small")
+	if err != nil {
+		log.Debugf("error checking command flag: %s", err)
+		log.Fatal("could not check command flag")
+	}
+	cats, err := cmd.Flags().GetBool("cats")
+	if err != nil {
+		log.Debugf("error checking command flag: %s", err)
+		log.Fatal("could not check command flag")
+	}
+	lib, err := cmd.Flags().GetBool("lib")
+	if err != nil {
+		log.Debugf("error checking command flag: %s", err)
+		log.Fatal("could not check command flag")
+	}
+	if err := validateNewArgs(small, cats, args); err != nil {
+		log.Fatal(err)
 	}
 
 	// Make the directory and switch to it
 	if err := makeProjectDir(args[0]); err != nil {
 		log.Debugln("mkdir error: %s", err)
-		return fmt.Errorf("could not create directory '%s'", args[0])
+		log.Fatalf("could not create directory: '%s'", args[0])
 	}
 
 	// Get the directory name
 	projName, err := getProjName()
 	if err != nil {
 		log.Debugf("get current dir error: %s", err)
-		return fmt.Errorf("could not get current directory")
+		log.Fatal("could not get current directory")
 	}
 
+	// Get the project name
+	name, err := cmd.Flags().GetString("name")
+	if err != nil {
+		log.Debugf("error checking command flag: %s", err)
+		log.Fatal("could not check command flag")
+	}
 	if name == "" {
 		name = projName
 	}
@@ -117,31 +126,39 @@ func runNew(args ...string) error {
 	config := config.New(name, projName, small)
 	if err := config.Write(); err != nil {
 		log.Debugf("config write error: %s", err)
-		return fmt.Errorf("could not create 'Wombats.toml' file")
+		log.Fatal("could not create 'Wombats.toml' file")
 	}
 
-	if err := initGitRepo(); err != nil {
-		return err
+	git, err := cmd.Flags().GetBool("git")
+	if err != nil {
+		log.Debugf("error checking command flag: %s", err)
+		log.Fatal("could not check command flag")
+	}
+	if git {
+		if err := initGitRepo(); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	// Create directories
-	if err := createDirs(); err != nil {
-		log.Debugf("mkdir error: %s", err)
-		return fmt.Errorf("could not create directories")
+	if !small {
+		if err := createDirs(lib, cats); err != nil {
+			log.Debugf("mkdir error: %s", err)
+			log.Fatal("could not create directories")
+		}
 	}
 
 	// Create default files
 	if err := createDefaultFiles(name, projName, small); err != nil {
 		log.Debugf("create file error: %s", err)
-		return fmt.Errorf("could not create default files")
+		log.Fatal("could not create default files")
 	}
 
 	log.Infof("Created application '%s' project", name)
-	return nil
 }
 
 // validateNewArgs validates the arguments given to new
-func validateNewArgs(args []string) error {
+func validateNewArgs(small, cats bool, args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("no project path provided")
 	}
@@ -179,22 +196,16 @@ func getProjName() (string, error) {
 
 // initGitRepo initializes the git repo if the option is specified
 func initGitRepo() error {
-	if git {
-		cmd := exec.Command("git", "init")
-		if err := cmd.Run(); err != nil {
-			log.Debugf("git init error: %s", err)
-			log.Errorf("could not initialize git repository")
-		}
+	cmd := exec.Command("git", "init")
+	if err := cmd.Run(); err != nil {
+		log.Debugf("git init error: %s", err)
+		return err
 	}
 
 	return nil
 }
 
-func createDirs() error {
-	if small {
-		return nil
-	}
-
+func createDirs(lib, cats bool) error {
 	dirs := []string{"SATS", "DATS"}
 	if !lib {
 		dirs = append(dirs, "BUILD")

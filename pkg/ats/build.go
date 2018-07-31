@@ -106,6 +106,9 @@ func Build(name, entryPoint string, clibs []string) string {
 	}
 
 	log.Infof("Building '%s' project", name)
+	patshomelocs := os.Getenv("PATSHOMELOCS")
+	patshomelocs = fmt.Sprintf("./DEPS:%s", patshomelocs)
+	os.Setenv("PATSHOMELOCS", patshomelocs)
 	args := getArgs(execFile, entryPoint, clibs)
 	out, err := ExecPatsccOutput(args...)
 	if err != nil {

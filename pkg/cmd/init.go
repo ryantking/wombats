@@ -17,51 +17,64 @@ var (
 		Short: "Initialize the current directory as a Wombats project",
 		Long: `Create a Wombats project in an existing ATS directory.
 It attempts to to look at the files to figure out default settings.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			if err := runInit(args...); err != nil {
-				log.Fatal(err)
-			}
-		},
+		Run: runInit,
 	}
 )
 
 func init() {
 	rootCmd.AddCommand(initCmd)
-	initCmd.Flags().StringVarP(&name, "name", "n", "",
+	initCmd.Flags().StringP("name", "n", "",
 		"The name of the project (default the directory name)")
-	initCmd.Flags().BoolVar(&git, "git", false,
-		"Initialize a new git repository.")
+	initCmd.Flags().Bool("git", false, "Initialize a new git repository.")
 }
 
-func runInit(args ...string) error {
+func runInit(cmd *cobra.Command, args []string) {
 	if len(args) > 0 {
-		return fmt.Errorf("found unexpected argument '%s'", args[0])
+		log.Fatalf("found unexpected argument '%s'", args[0])
 	}
 
 	projName, err := getProjName()
 	if err != nil {
 		log.Debugf("get current dir error: %s", err)
-		return fmt.Errorf("could not get current directory")
+		log.Fatal("could not get current directory")
 	}
 
+	// Get the project name
+	name, err := cmd.Flags().GetString("name")
+	if err != nil {
+		log.Debugf("error checking command flag: %s", err)
+		log.Fatal("could not check command flag")
+	}
 	if name == "" {
 		name = projName
 	}
 
 	// Get the initial config and write it to a file
+	small, err := cmd.Flags().GetBool("small")
+	if err != nil {
+		log.Debugf("error checking command flag: %s", err)
+		log.Fatal("could not check command flag")
+	}
 	config := config.New(name, projName, small)
 	config.Package.EntryPoint = findEntryPoint(config)
 	if err := config.Write(); err != nil {
 		log.Debugf("config write error: %s", err)
-		return fmt.Errorf("could not create 'Wombats.toml' file")
+		log.Fatal("could not create 'Wombats.toml' file")
 	}
 
-	if err := initGitRepo(); err != nil {
-		return err
+	// Iniitlize the git repo is specified
+	git, err := cmd.Flags().GetBool("git")
+	if err != nil {
+		log.Debugf("error checking command flag: %s", err)
+		log.Fatal("could not check command flag")
+	}
+	if git {
+		if err := initGitRepo(); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	log.Infof("Initialized '%s' project in current directory", name)
-	return nil
 }
 
 func findEntryPoint(config *config.Config) string {

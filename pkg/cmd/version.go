@@ -19,39 +19,33 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version information about the various ATS binaries",
 	Long:  `Show version information for Wombats, ATS, and gcc.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := runVersion(args...); err != nil {
-			log.Fatal(err)
-		}
-	},
+	Run:   runVersion,
 }
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
 }
 
-func runVersion(args ...string) error {
+func runVersion(cmd *cobra.Command, args []string) {
 	if len(args) > 0 {
-		return fmt.Errorf("found unnexpected argument: %s", args[0])
+		log.Fatalf("found unnexpected argument: %s", args[0])
 	}
 
 	atsVersion, err := getATSVersion()
 	if err != nil {
 		log.Debugf("error getting ATS version: %s", err)
-		return fmt.Errorf("could not get ATS version")
+		log.Fatal("could not get ATS version")
 	}
 
 	gccVersion, err := getGCCVersion()
 	if err != nil {
 		log.Debugf("error getting gcc version: %s", err)
-		return fmt.Errorf("could not get gcc version")
+		log.Fatal("could not get gcc version")
 	}
 
 	fmt.Printf("wombats %s\n", womVersion)
 	fmt.Printf("ATS %s\n", atsVersion)
 	fmt.Printf("gcc %s\n", gccVersion)
-
-	return nil
 }
 
 func getATSVersion() (string, error) {

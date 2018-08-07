@@ -36,7 +36,7 @@ func init() {
 func runCheck(cmd *cobra.Command, args []string) {
 	config, err := config.Read()
 	if err != nil {
-		log.Debugf("error reading config: %s", err)
+		log.Debug(err)
 		log.Fatalf(
 			"could not find '%s' in this directory or any parent directory",
 			"Wombats.toml",

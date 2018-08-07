@@ -82,17 +82,17 @@ func init() {
 func runNew(cmd *cobra.Command, args []string) {
 	small, err := cmd.Flags().GetBool("small")
 	if err != nil {
-		log.Debugf("error checking command flag: %s", err)
+		log.Debug(err)
 		log.Fatal("could not check command flag")
 	}
 	cats, err := cmd.Flags().GetBool("cats")
 	if err != nil {
-		log.Debugf("error checking command flag: %s", err)
+		log.Debug(err)
 		log.Fatal("could not check command flag")
 	}
 	lib, err := cmd.Flags().GetBool("lib")
 	if err != nil {
-		log.Debugf("error checking command flag: %s", err)
+		log.Debug(err)
 		log.Fatal("could not check command flag")
 	}
 	if err := validateNewArgs(small, cats, args); err != nil {
@@ -108,14 +108,14 @@ func runNew(cmd *cobra.Command, args []string) {
 	// Get the directory name
 	projName, err := getProjName()
 	if err != nil {
-		log.Debugf("get current dir error: %s", err)
+		log.Debug(err)
 		log.Fatal("could not get current directory")
 	}
 
 	// Get the project name
 	name, err := cmd.Flags().GetString("name")
 	if err != nil {
-		log.Debugf("error checking command flag: %s", err)
+		log.Debug(err)
 		log.Fatal("could not check command flag")
 	}
 	if name == "" {
@@ -125,13 +125,13 @@ func runNew(cmd *cobra.Command, args []string) {
 	// Get the initial config and write it to a file.
 	config := config.New(name, projName, small)
 	if err := config.Write(); err != nil {
-		log.Debugf("config write error: %s", err)
+		log.Debug(err)
 		log.Fatal("could not create 'Wombats.toml' file")
 	}
 
 	git, err := cmd.Flags().GetBool("git")
 	if err != nil {
-		log.Debugf("error checking command flag: %s", err)
+		log.Debug(err)
 		log.Fatal("could not check command flag")
 	}
 	if git {
@@ -143,14 +143,14 @@ func runNew(cmd *cobra.Command, args []string) {
 	// Create directories
 	if !small {
 		if err := createDirs(lib, cats); err != nil {
-			log.Debugf("mkdir error: %s", err)
+			log.Debug(err)
 			log.Fatal("could not create directories")
 		}
 	}
 
 	// Create default files
 	if err := createDefaultFiles(name, projName, small); err != nil {
-		log.Debugf("create file error: %s", err)
+		log.Debug(err)
 		log.Fatal("could not create default files")
 	}
 
@@ -198,7 +198,7 @@ func getProjName() (string, error) {
 func initGitRepo() error {
 	cmd := exec.Command("git", "init")
 	if err := cmd.Run(); err != nil {
-		log.Debugf("git init error: %s", err)
+		log.Debug(err)
 		return err
 	}
 

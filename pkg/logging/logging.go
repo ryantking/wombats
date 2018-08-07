@@ -9,11 +9,12 @@ import (
 )
 
 var (
-	infofmt = color.New(color.FgGreen).Add(color.Bold)
-	warnfmt = color.New(color.FgYellow).Add(color.Bold)
-	errfmt  = color.New(color.FgRed).Add(color.Bold)
-	boldfmt = color.New(color.Bold)
-	spaces  = 4
+	infofmt  = color.New(color.FgGreen).Add(color.Bold)
+	debugfmt = color.New(color.FgBlue).Add(color.Bold)
+	warnfmt  = color.New(color.FgYellow).Add(color.Bold)
+	errfmt   = color.New(color.FgRed).Add(color.Bold)
+	boldfmt  = color.New(color.Bold)
+	spaces   = 4
 )
 
 // NewLogrusHook returns the hook for adding to logrus
@@ -21,6 +22,7 @@ func NewLogrusHook() LogrusHook {
 	return LogrusHook{
 		levels: []log.Level{
 			log.InfoLevel,
+			log.DebugLevel,
 			log.WarnLevel,
 			log.ErrorLevel,
 			log.FatalLevel,
@@ -46,12 +48,15 @@ func printSpaces(inc bool) {
 
 // Fire prints out logrus messages to stdout
 func (lh LogrusHook) Fire(e *log.Entry) error {
-	printSpaces(true)
+	printSpaces(e.Level != log.DebugLevel)
 	switch e.Level {
 	case log.InfoLevel:
 		words := strings.Split(e.Message, " ")
 		infofmt.Printf("%s ", words[0])
 		fmt.Print(strings.Join(words[1:], " "))
+	case log.DebugLevel:
+		debugfmt.Print("debug: ")
+		fmt.Print(e.Message)
 	case log.WarnLevel:
 		warnfmt.Printf("warning: ")
 		fmt.Print(e.Message)

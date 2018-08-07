@@ -16,7 +16,7 @@ import (
 func checkDir(dir string, lastBuilt time.Time) bool {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		log.Debugf("error reading directory: %s: %s", dir, err)
+		log.Debug(err)
 		log.Fatalf("could not read directory: %s", dir)
 	}
 
@@ -74,7 +74,7 @@ func getArgs(execFile, entryPoint string, clibs []string) []string {
 	cmd := exec.Command("pkg-config", pkgCfgArgs...)
 	cflagsRaw, err := cmd.Output()
 	if err != nil {
-		log.Debugf("pkg-config error: %s", err)
+		log.Debug(err)
 	}
 
 	cflags := strings.Split(strings.TrimSpace(string(cflagsRaw)), " ")

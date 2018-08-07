@@ -33,13 +33,13 @@ func runVersion(cmd *cobra.Command, args []string) {
 
 	atsVersion, err := getATSVersion()
 	if err != nil {
-		log.Debugf("error getting ATS version: %s", err)
+		log.Debug(err)
 		log.Fatal("could not get ATS version")
 	}
 
 	gccVersion, err := getGCCVersion()
 	if err != nil {
-		log.Debugf("error getting gcc version: %s", err)
+		log.Debug(err)
 		log.Fatal("could not get gcc version")
 	}
 

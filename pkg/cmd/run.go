@@ -27,7 +27,7 @@ func init() {
 func runRun(cmd *cobra.Command, args []string) {
 	config, err := config.Read()
 	if err != nil {
-		log.Debugf("error reading config: %s", err)
+		log.Debug(err)
 		log.Fatalf(
 			"could not find '%s' in this directory or any parent directory",
 			"Wombats.toml",
@@ -47,7 +47,7 @@ func runRun(cmd *cobra.Command, args []string) {
 	execCmd.Stdout = os.Stdout
 	execCmd.Stderr = os.Stderr
 	if err := execCmd.Run(); err != nil {
-		log.Debugf("error running '%s': %s", config.Package.Name, err)
+		log.Debug(err)
 		log.Fatalf("could not run '%s' project", config.Package.Name)
 	}
 

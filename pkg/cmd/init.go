@@ -35,14 +35,14 @@ func runInit(cmd *cobra.Command, args []string) {
 
 	projName, err := getProjName()
 	if err != nil {
-		log.Debugf("get current dir error: %s", err)
+		log.Debug(err)
 		log.Fatal("could not get current directory")
 	}
 
 	// Get the project name
 	name, err := cmd.Flags().GetString("name")
 	if err != nil {
-		log.Debugf("error checking command flag: %s", err)
+		log.Debug(err)
 		log.Fatal("could not check command flag")
 	}
 	if name == "" {
@@ -52,20 +52,20 @@ func runInit(cmd *cobra.Command, args []string) {
 	// Get the initial config and write it to a file
 	small, err := cmd.Flags().GetBool("small")
 	if err != nil {
-		log.Debugf("error checking command flag: %s", err)
+		log.Debug(err)
 		log.Fatal("could not check command flag")
 	}
 	config := config.New(name, projName, small)
 	config.Package.EntryPoint = findEntryPoint(config)
 	if err := config.Write(); err != nil {
-		log.Debugf("config write error: %s", err)
+		log.Debug(err)
 		log.Fatal("could not create 'Wombats.toml' file")
 	}
 
 	// Iniitlize the git repo is specified
 	git, err := cmd.Flags().GetBool("git")
 	if err != nil {
-		log.Debugf("error checking command flag: %s", err)
+		log.Debug(err)
 		log.Fatal("could not check command flag")
 	}
 	if git {

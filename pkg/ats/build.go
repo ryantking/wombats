@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -91,6 +92,35 @@ func calcTime(d time.Duration) string {
 	return fmt.Sprintf("%0.2fs", d.Seconds())
 }
 
+func removeBuildFiles(small bool) error {
+	if !small {
+		if err := os.Chdir("./BUILD"); err != nil {
+			return err
+		}
+	}
+
+	files, err := ioutil.ReadDir("./")
+	if err != nil {
+		return err
+	}
+
+	r := regexp.MustCompile(".+_[d|s]ats\\.c")
+	for _, f := range files {
+		if r.MatchString(f.Name()) {
+			err = os.Remove(f.Name())
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if !small {
+		return os.Chdir("../")
+	}
+
+	return nil
+}
+
 // Build compiles an ATS project
 func Build(name, entryPoint string, clibs []string) string {
 	start := time.Now()
@@ -113,7 +143,13 @@ func Build(name, entryPoint string, clibs []string) string {
 	out, err := ExecPatsccOutput(args...)
 	if err != nil {
 		logging.CheckErrors(strings.TrimSpace(out))
+		log.Debug(out)
 		log.Fatalln("build failed")
+	}
+	err = removeBuildFiles(small)
+	if err != nil {
+		log.Debug(err)
+		log.Warnf("could not remove build files")
 	}
 	log.Infof("Finished building in %s", calcTime(time.Since(start)))
 

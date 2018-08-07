@@ -50,11 +50,7 @@ func runInit(cmd *cobra.Command, args []string) {
 	}
 
 	// Get the initial config and write it to a file
-	small, err := cmd.Flags().GetBool("small")
-	if err != nil {
-		log.Debug(err)
-		log.Fatal("could not check command flag")
-	}
+	small := isSmall()
 	config := config.New(name, projName, small)
 	config.Package.EntryPoint = findEntryPoint(config)
 	if err := config.Write(); err != nil {
@@ -75,6 +71,17 @@ func runInit(cmd *cobra.Command, args []string) {
 	}
 
 	log.Infof("Initialized '%s' project in current directory", name)
+}
+
+func isSmall() bool {
+	dirs := []string{"DATS", "SATS", "CATS", "BUILD"}
+	for _, dir := range dirs {
+		if _, err := os.Stat(dir); err == nil {
+			return false
+		}
+	}
+
+	return true
 }
 
 func findEntryPoint(config *config.Config) string {

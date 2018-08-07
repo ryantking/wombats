@@ -14,6 +14,8 @@ const (
 	ErrorCount
 	// TypeError holds info about a type error
 	TypeError
+	// IncludeError represents an include error
+	IncludeError
 )
 
 // LogrusHook is a hook to print out logrus info to stdout
@@ -58,4 +60,15 @@ type ATSTypeError struct {
 // Type ...
 func (e *ATSTypeError) Type() ATSErrorType {
 	return TypeError
+}
+
+// ATSIncludeError holds info about an ATS include error
+type ATSIncludeError struct {
+	Fname, IncludeFname        string
+	StartL, EndL, StartO, EndO int
+}
+
+// Type ...
+func (e *ATSIncludeError) Type() ATSErrorType {
+	return IncludeError
 }

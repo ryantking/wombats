@@ -11,10 +11,13 @@ import (
 )
 
 const (
-	lineRegex = `^([\/\w+]+\.[d|s|h]ats): \d+\(line=(\d+), offs=(\d+)\) -- ` +
+	lineRegex = `^([\/\S+]+\.[d|s|h]ats): \d+\(line=(\d+), offs=(\d+)\) -- ` +
 		`\d+\(line=(\d+), offs=(\d+)\): error\(\d+\): (.+).$`
-	typeRegex  = `^The (actual|needed) term is: (.+)$`
-	countRegex = `^patsopt\(\w+\): there are \[(\d+)\] errors in total.$`
+	typeRegex    = `^The (actual|needed) term is: (.+)$`
+	countRegex   = `^patsopt\(\w+\): there are \[(\d+)\] errors in total.$`
+	includeRegex = `^([\/\S+]+\.[d|s|h]ats): \d+\(line=(\d+), offs=(\d+)\) ` +
+		`-- \d+\(line=(\d+), offs=(\d+)\): error\(\d+\): the file \[(\S+)\] ` +
+		`is not available for inclusion\.`
 )
 
 // CheckErrors checks output for errors and prints them
@@ -45,6 +48,10 @@ func ParseErrors(lines []string) []ATSErrorLine {
 }
 
 func parseError(line string) ATSErrorLine {
+	if atsErr := parseIncludeError(line); atsErr != nil {
+		return atsErr
+	}
+
 	if atsErr := parseLineError(line); atsErr != nil {
 		return atsErr
 	}
@@ -132,6 +139,50 @@ func parseCountError(line string) ATSErrorLine {
 	return &ATSCountError{Count: count}
 }
 
+func parseIncludeError(line string) ATSErrorLine {
+	r := regexp.MustCompile(includeRegex)
+	matches := r.FindStringSubmatch(line)
+	if len(matches) != 7 {
+		return nil
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil
+	}
+
+	fname, err := filepath.Rel(wd, matches[1])
+	if err != nil {
+		return nil
+	}
+
+	startL, err := strconv.Atoi(matches[2])
+	if err != nil {
+		return nil
+	}
+	startO, err := strconv.Atoi(matches[3])
+	if err != nil {
+		return nil
+	}
+	endL, err := strconv.Atoi(matches[4])
+	if err != nil {
+		return nil
+	}
+	endO, err := strconv.Atoi(matches[5])
+	if err != nil {
+		return nil
+	}
+
+	return &ATSIncludeError{
+		Fname:        fname,
+		IncludeFname: matches[6],
+		StartL:       startL - 1,
+		EndL:         endL - 1,
+		StartO:       startO - 1,
+		EndO:         endO - 1,
+	}
+}
+
 func printLineNum(n, max int) {
 	printSpaces(false)
 	nStr := strconv.Itoa(n)
@@ -146,6 +197,8 @@ func (e ATSLineError) Print() {
 	printSpaces(false)
 	errfmt.Printf("error: ")
 	fmt.Printf("%s\n", e.Error)
+	printSpaces(false)
+	fmt.Printf(" --> %s\n", e.Fname)
 
 	f, err := os.Open(e.Fname)
 	if err != nil {
@@ -160,17 +213,17 @@ func (e ATSLineError) Print() {
 	}
 
 	max := len(strconv.Itoa(e.EndL))
-	printLineNum(e.StartL, max)
+	printLineNum(e.StartL+1, max)
 	fmt.Print(lines[e.StartL][:e.StartO])
 	if e.StartL == e.EndL {
 		errfmt.Print(lines[e.StartL][e.StartO:e.EndO])
 	} else {
 		errfmt.Printf("%s\n", lines[e.StartL][e.StartO:])
-		for i, badL := range lines[e.StartL+1 : e.EndL-1] {
-			printLineNum(i+e.StartL+1, max)
+		for i, badL := range lines[e.StartL+1 : e.EndL] {
+			printLineNum(i+e.StartL+2, max)
 			errfmt.Printf("%s\n", badL)
 		}
-		printLineNum(e.EndL, max)
+		printLineNum(e.EndL+1, max)
 		errfmt.Print(lines[e.EndL][:e.EndO])
 	}
 	fmt.Printf("%s\n", lines[e.EndL][e.EndO:])
@@ -192,4 +245,41 @@ func (e ATSCountError) Print() {
 		errors = "error"
 	}
 	fmt.Printf("%d %s\n", e.Count, errors)
+}
+
+// Print ...
+func (e ATSIncludeError) Print() {
+	printSpaces(false)
+	errfmt.Printf("error: ")
+	fmt.Printf("%s is not available for inclusion\n", e.IncludeFname)
+	printSpaces(false)
+	fmt.Printf(" --> %s\n", e.Fname)
+
+	f, err := os.Open(e.Fname)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	var lines []string
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		lines = append(lines, s.Text())
+	}
+
+	max := len(strconv.Itoa(e.EndL))
+	printLineNum(e.StartL+1, max)
+	fmt.Print(lines[e.StartL][:e.StartO])
+	if e.StartL == e.EndL {
+		errfmt.Print(lines[e.StartL][e.StartO:e.EndO])
+	} else {
+		errfmt.Printf("%s\n", lines[e.StartL][e.StartO:])
+		for i, badL := range lines[e.StartL+1 : e.EndL] {
+			printLineNum(i+e.StartL+2, max)
+			errfmt.Printf("%s\n", badL)
+		}
+		printLineNum(e.EndL+1, max)
+		errfmt.Print(lines[e.EndL][:e.EndO])
+	}
+	fmt.Printf("%s\n", lines[e.EndL][e.EndO:])
 }

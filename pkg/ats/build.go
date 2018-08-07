@@ -144,7 +144,7 @@ func Build(name, entryPoint string, clibs []string) string {
 	if err != nil {
 		logging.CheckErrors(strings.TrimSpace(out))
 		log.Debug(out)
-		log.Fatalln("build failed")
+		os.Exit(1)
 	}
 	err = removeBuildFiles(small)
 	if err != nil {

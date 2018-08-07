@@ -46,7 +46,6 @@ func ExecPatsccOutput(args ...string) (string, error) {
 	cmd.Env = os.Environ()
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Debug(err)
 		return string(out), err
 	}
 	return string(out), nil
@@ -59,7 +58,6 @@ func ExecPatscc(args ...string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		log.Debug(err)
 		return err
 	}
 	return nil

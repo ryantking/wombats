@@ -29,7 +29,7 @@ func init() {
 func runInstall(cmd *cobra.Command, args []string) {
 	config, err := config.Read()
 	if err != nil {
-		log.Debugf("error reading config: %s", err)
+		log.Debug(err)
 		log.Fatalf(
 			"could not find '%s' in this directory or any parent directory",
 			"Wombats.toml",
@@ -44,7 +44,8 @@ func runInstall(cmd *cobra.Command, args []string) {
 
 	projName, err := getProjName()
 	if err != nil {
-		log.Fatalf("could not build '%s' project", config.Package.Name)
+		log.Debug(err)
+		log.Fatalf("could not install '%s' project", config.Package.Name)
 	}
 
 	execFile := ats.Build(projName, config.Package.EntryPoint,
@@ -53,12 +54,14 @@ func runInstall(cmd *cobra.Command, args []string) {
 
 	wd, err := os.Getwd()
 	if err != nil {
+		log.Debug(err)
 		log.Fatal("could not get current directory")
 	}
 
 	absExecFile := fmt.Sprintf("%s/%s", wd, execFile[2:])
 	globalExecFile := fmt.Sprintf("%s/%s", bin, execFile[2:])
 	if err = os.Rename(absExecFile, globalExecFile); err != nil {
+		log.Debug(err)
 		log.Fatalf("could not install '%s' to '%s'", absExecFile, bin)
 	}
 	log.Infof("Installed '%s' to '%s'", execFile, globalExecFile)

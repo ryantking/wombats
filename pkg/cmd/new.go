@@ -101,7 +101,7 @@ func runNew(cmd *cobra.Command, args []string) {
 
 	// Make the directory and switch to it
 	if err := makeProjectDir(args[0]); err != nil {
-		log.Debugln("mkdir error: %s", err)
+		log.Debug(err)
 		log.Fatalf("could not create directory: '%s'", args[0])
 	}
 
@@ -198,7 +198,6 @@ func getProjName() (string, error) {
 func initGitRepo() error {
 	cmd := exec.Command("git", "init")
 	if err := cmd.Run(); err != nil {
-		log.Debug(err)
 		return err
 	}
 

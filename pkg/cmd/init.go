@@ -94,6 +94,7 @@ func findEntryPoint(config *config.Config) string {
 		entryPoint, err = reader.ReadString('\n')
 		entryPoint = strings.TrimSpace(entryPoint)
 		if err != nil {
+			log.Debug(err)
 			log.Fatal("could not read input")
 		}
 		_, err = os.Stat(entryPoint)

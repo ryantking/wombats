@@ -35,6 +35,7 @@ func runBuild(cmd *cobra.Command, args []string) {
 
 	projName, err := getProjName()
 	if err != nil {
+		log.Debug(err)
 		log.Fatalf("could not build '%s' project", config.Package.Name)
 	}
 

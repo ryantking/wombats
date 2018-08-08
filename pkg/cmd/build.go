@@ -39,5 +39,5 @@ func runBuild(cmd *cobra.Command, args []string) {
 		log.Fatalf("could not build '%s' project", config.Package.Name)
 	}
 
-	ats.Build(projName, config.Package.EntryPoint, config.Package.Clibs)
+	ats.Build(projName, config)
 }

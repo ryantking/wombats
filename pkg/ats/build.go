@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/RyanTKing/wombats/pkg/config"
 	"github.com/RyanTKing/wombats/pkg/logging"
 	log "github.com/sirupsen/logrus"
 )
@@ -64,22 +65,23 @@ func removeDuplicates(args []string) []string {
 	return args[:i]
 }
 
-func getArgs(execFile, entryPoint string, clibs []string) []string {
-	args := []string{"-w", "-o", execFile, entryPoint, "-DATS_MEMALLOC_LIBC",
-		"-latslib", "-ljson-c"}
-	if len(clibs) == 0 {
-		return args
+func getArgs(execFile string, cfg *config.Config) []string {
+	args := append([]string{"-w"}, cfg.Package.PatsccArgs...)
+	args = append(args, "-o", execFile, cfg.Package.EntryPoint)
+
+	if len(cfg.Package.Clibs) > 0 {
+		pkgCfgArgs := append(cfg.Package.Clibs, "--cflags", "--libs")
+		cmd := exec.Command("pkg-config", pkgCfgArgs...)
+		cflagsRaw, err := cmd.Output()
+		if err != nil {
+			log.Debug(err)
+		}
+
+		cflags := strings.Split(strings.TrimSpace(string(cflagsRaw)), " ")
+		args = append(args, removeDuplicates(cflags)...)
 	}
 
-	pkgCfgArgs := append(clibs, "--cflags", "--libs")
-	cmd := exec.Command("pkg-config", pkgCfgArgs...)
-	cflagsRaw, err := cmd.Output()
-	if err != nil {
-		log.Debug(err)
-	}
-
-	cflags := strings.Split(strings.TrimSpace(string(cflagsRaw)), " ")
-	return append(args, removeDuplicates(cflags)...)
+	return append(args, cfg.Package.GccArgs...)
 }
 
 func calcTime(d time.Duration) string {
@@ -122,11 +124,11 @@ func removeBuildFiles(small bool) error {
 }
 
 // Build compiles an ATS project
-func Build(name, entryPoint string, clibs []string) string {
+func Build(name string, cfg *config.Config) string {
 	start := time.Now()
 	execFile := fmt.Sprintf("./BUILD/%s", name)
 	small := false
-	if !strings.Contains(entryPoint, "./DATS/") {
+	if !strings.Contains(cfg.Package.EntryPoint, "./DATS/") {
 		execFile = fmt.Sprintf("./%s", name)
 		small = true
 	}
@@ -139,7 +141,7 @@ func Build(name, entryPoint string, clibs []string) string {
 	patshomelocs := os.Getenv("PATSHOMELOCS")
 	patshomelocs = fmt.Sprintf("./DEPS:%s", patshomelocs)
 	os.Setenv("PATSHOMELOCS", patshomelocs)
-	args := getArgs(execFile, entryPoint, clibs)
+	args := getArgs(execFile, cfg)
 	out, err := ExecPatsccOutput(args...)
 	if err != nil {
 		logging.CheckErrors(strings.TrimSpace(out))

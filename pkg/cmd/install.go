@@ -48,8 +48,7 @@ func runInstall(cmd *cobra.Command, args []string) {
 		log.Fatalf("could not install '%s' project", config.Package.Name)
 	}
 
-	execFile := ats.Build(projName, config.Package.EntryPoint,
-		config.Package.Clibs)
+	execFile := ats.Build(projName, config)
 	log.Infof("installing '%s' to '%s'", filepath.Base(execFile), bin)
 
 	wd, err := os.Getwd()

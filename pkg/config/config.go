@@ -33,6 +33,8 @@ func New(name, projName string, small bool) *Config {
 		Authors:    authors,
 		Version:    "v0.1",
 		EntryPoint: entryPoint,
+		PatsccArgs: []string{"-DATS_MEMALLOC_LIBC"},
+		GccArgs:    []string{"-latslib", "-ljson-c"},
 	}
 
 	return &Config{Package: pkgCfg}

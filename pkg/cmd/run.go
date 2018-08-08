@@ -40,7 +40,7 @@ func runRun(cmd *cobra.Command, args []string) {
 		log.Fatalf("could not build '%s' project", config.Package.Name)
 	}
 
-	execFile := ats.Build(projName, config.Package.EntryPoint, config.Package.Clibs)
+	execFile := ats.Build(projName, config)
 	log.Infof("Running '%s'", execFile)
 	execCmd := exec.Command(execFile, args...)
 	execCmd.Env = os.Environ()

@@ -69,8 +69,8 @@ func getArgs(execFile string, cfg *config.Config) []string {
 	args := append([]string{"-w"}, cfg.Package.PatsccArgs...)
 	args = append(args, "-o", execFile, cfg.Package.EntryPoint)
 
-	if len(cfg.Package.Clibs) > 0 {
-		pkgCfgArgs := append(cfg.Package.Clibs, "--cflags", "--libs")
+	if len(cfg.Package.CLibs) > 0 {
+		pkgCfgArgs := append(cfg.Package.CLibs, "--cflags", "--libs")
 		cmd := exec.Command("pkg-config", pkgCfgArgs...)
 		cflagsRaw, err := cmd.Output()
 		if err != nil {

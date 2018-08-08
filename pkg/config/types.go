@@ -2,25 +2,19 @@ package config
 
 // PackageConfig holds the global package information.
 type PackageConfig struct {
-	Name       string
-	Authors    []string
-	Version    string
-	License    string
-	EntryPoint string
-	PatsccArgs []string
-	Clibs      []string
-	GccArgs    []string
-}
-
-// DependencyConfig holds information about a dependency.
-type DependencyConfig struct {
-	Version string
-	Source  string
+	Name       string   `toml:"name"`
+	Authors    []string `toml:"authors"`
+	Version    string   `toml:"version"`
+	License    string   `toml:"license"`
+	EntryPoint string   `toml:"entry_point"`
+	PatsccArgs []string `toml:"patscc_args"`
+	CLibs      []string `toml:"c_libs"`
+	GccArgs    []string `toml:"gcc_args"`
 }
 
 // Config is a struct representing the Wombats.yaml file that each project
 // must contain.
 type Config struct {
-	Package      PackageConfig
-	Dependencies []DependencyConfig
+	Package      PackageConfig     `toml:"package"`
+	Dependencies map[string]string `toml:"dependencies"`
 }

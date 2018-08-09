@@ -14,6 +14,7 @@ var (
 	warnfmt  = color.New(color.FgYellow).Add(color.Bold)
 	errfmt   = color.New(color.FgRed).Add(color.Bold)
 	boldfmt  = color.New(color.Bold)
+	faintfmt = color.New(color.FgBlue).Add(color.Faint)
 	spaces   = 4
 )
 

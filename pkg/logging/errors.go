@@ -189,7 +189,7 @@ func printLineNum(n, max int) {
 	for i := 0; i < max-len(nStr); i++ {
 		fmt.Print(" ")
 	}
-	fmt.Printf("%d | ", n)
+	faintfmt.Printf("%d: ", n)
 }
 
 // Print ...
@@ -198,7 +198,8 @@ func (e ATSLineError) Print() {
 	errfmt.Printf("error: ")
 	fmt.Printf("%s\n", e.Error)
 	printSpaces(false)
-	fmt.Printf(" --> %s\n", e.Fname)
+	faintfmt.Print(" --> ")
+	fmt.Println(e.Fname)
 
 	f, err := os.Open(e.Fname)
 	if err != nil {
@@ -253,7 +254,8 @@ func (e ATSIncludeError) Print() {
 	errfmt.Printf("error: ")
 	fmt.Printf("%s is not available for inclusion\n", e.IncludeFname)
 	printSpaces(false)
-	fmt.Printf(" --> %s\n", e.Fname)
+	faintfmt.Print(" --> ")
+	fmt.Println(e.Fname)
 
 	f, err := os.Open(e.Fname)
 	if err != nil {
